@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: access-requests
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/access_requests}
+    username: ${DB_USER:access_requests}
+    password: ${DB_PASSWORD:access_requests}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  web:
+    resources:
+      # API only: no static files, so unknown paths become a JSON 404.
+      add-mappings: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+    include-message: never
+
+app:
+  # Bodies larger than this are rejected with 413.
+  max-body-bytes: 10240
+  login-rate-limit:
+    max-failures: 5
+    window: 15m
+  jwt:
+    # HS256 key, at least 32 bytes. The default is for local development only;
+    # the prod profile requires JWT_SECRET.
+    secret: ${JWT_SECRET:6REzaI1i7qJwtjo48+/X+sxPlTkLXXh32HiS8tsmAFE=}
+    expiration: ${JWT_EXPIRATION:2h}

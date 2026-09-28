@@ -1,0 +1,22 @@
+# Local PostgreSQL for development: `docker compose up -d`.
+# Credentials default to the same values as application.yml; override with
+# DB_USER / DB_PASSWORD / DB_PORT in the environment or a .env file.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: access_requests
+      POSTGRES_USER: ${DB_USER:-access_requests}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-access_requests}
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d access_requests"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

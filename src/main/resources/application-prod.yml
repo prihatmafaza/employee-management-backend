@@ -1,0 +1,5 @@
+# Activate with SPRING_PROFILES_ACTIVE=prod when served over HTTPS.
+app:
+  jwt:
+    # No default: startup fails unless JWT_SECRET is set.
+    secret: ${JWT_SECRET}

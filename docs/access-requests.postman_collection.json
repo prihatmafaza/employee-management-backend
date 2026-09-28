@@ -1,0 +1,2058 @@
+{
+  "info": {
+    "name": "Access Requests API",
+    "description": "Backend for the Access Requests app (Spring Boot + PostgreSQL). Full contract: `docs/api-contract.md`.\n\n**How to use**\n\n1. Set `baseUrl` if the backend isn't on `http://localhost:8080`.\n2. Run one of the **Auth → Login as …** requests. The token is saved automatically.\n3. Call any other endpoint. Log in as another user to switch roles.\n\n**Conventions**\n\n- Every body is JSON (`Content-Type: application/json`); any other content type → `415`.\n- Every endpoint except login/logout needs `Authorization: Bearer <token>`, else `401 UNAUTHENTICATED`.\n- Wrong role → `403 FORBIDDEN`. Timestamps are ISO 8601 UTC. Lists are newest first.\n- Errors always look like `{ \"error\": { \"code\": \"...\", \"message\": \"...\" } }`; `message` is user-readable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "password",
+      "value": "password123"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "requestId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login as alice (USER)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "200 Logged in",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"password123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwidXNlcm5hbWUiOiJhbGljZSJ9.signature\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 7200,\n  \"user\": {\n    \"id\": 4,\n    \"username\": \"alice\",\n    \"fullName\": \"Alice Anderson\",\n    \"role\": \"USER\",\n    \"managerId\": 2\n  }\n}"
+            },
+            {
+              "name": "400 Missing field",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"alice\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Please enter your username and password.\"\n  }\n}"
+            },
+            {
+              "name": "401 Wrong password",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"wrong\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHENTICATED\",\n    \"message\": \"Invalid username or password.\"\n  }\n}"
+            },
+            {
+              "name": "429 Too many failures",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"bob\",\n  \"password\": \"password123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"RATE_LIMITED\",\n    \"message\": \"Too many failed login attempts. Please wait a few minutes and try again.\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", body.accessToken);",
+                  "    console.log(\"Logged in as \" + body.user.username + \" (\" + body.user.role + \")\");",
+                  "}",
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as maria (MANAGER)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"maria\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "200 Logged in",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"password123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwidXNlcm5hbWUiOiJhbGljZSJ9.signature\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 7200,\n  \"user\": {\n    \"id\": 4,\n    \"username\": \"alice\",\n    \"fullName\": \"Alice Anderson\",\n    \"role\": \"USER\",\n    \"managerId\": 2\n  }\n}"
+            },
+            {
+              "name": "400 Missing field",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"alice\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Please enter your username and password.\"\n  }\n}"
+            },
+            {
+              "name": "401 Wrong password",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"wrong\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHENTICATED\",\n    \"message\": \"Invalid username or password.\"\n  }\n}"
+            },
+            {
+              "name": "429 Too many failures",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"bob\",\n  \"password\": \"password123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"RATE_LIMITED\",\n    \"message\": \"Too many failed login attempts. Please wait a few minutes and try again.\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", body.accessToken);",
+                  "    console.log(\"Logged in as \" + body.user.username + \" (\" + body.user.role + \")\");",
+                  "}",
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as admin (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "200 Logged in",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"password123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwidXNlcm5hbWUiOiJhbGljZSJ9.signature\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 7200,\n  \"user\": {\n    \"id\": 4,\n    \"username\": \"alice\",\n    \"fullName\": \"Alice Anderson\",\n    \"role\": \"USER\",\n    \"managerId\": 2\n  }\n}"
+            },
+            {
+              "name": "400 Missing field",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"alice\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Please enter your username and password.\"\n  }\n}"
+            },
+            {
+              "name": "401 Wrong password",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"wrong\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHENTICATED\",\n    \"message\": \"Invalid username or password.\"\n  }\n}"
+            },
+            {
+              "name": "429 Too many failures",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Checks the credentials and returns a JWT access token. **The test script saves `accessToken` into the\n`token` collection variable**, and every other request sends it as `Authorization: Bearer {{token}}`\n(inherited from the collection).\n\n- `username` is trimmed and matched case-insensitively.\n- Any `Authorization` header sent here is ignored, so a stale token never blocks login.\n- 5 failed attempts per username + IP within 15 minutes → `429 RATE_LIMITED`.\n\nDemo accounts (password `password123`): `admin` (ADMIN), `maria`, `mark` (MANAGER), `alice`, `bob` (USER, manager maria), `charlie` (USER, manager mark).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"bob\",\n  \"password\": \"password123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"RATE_LIMITED\",\n    \"message\": \"Too many failed login attempts. Please wait a few minutes and try again.\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", body.accessToken);",
+                  "    console.log(\"Logged in as \" + body.user.username + \" (\" + body.user.role + \")\");",
+                  "}",
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "The logged-in user. Never contains a password field. Role changes in the database apply immediately."
+          },
+          "response": [
+            {
+              "name": "200 Current user",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "me"
+                  ]
+                },
+                "description": "The logged-in user. Never contains a password field. Role changes in the database apply immediately."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 4,\n  \"username\": \"alice\",\n  \"fullName\": \"Alice Anderson\",\n  \"role\": \"USER\",\n  \"managerId\": 2\n}"
+            },
+            {
+              "name": "401 No or invalid token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "me"
+                  ]
+                },
+                "description": "The logged-in user. Never contains a password field. Role changes in the database apply immediately."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHENTICATED\",\n    \"message\": \"Your session has expired. Please log in again.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revokes the bearer token sent with the request (it returns `401` afterwards). Always `204`, even without a token or with an expired one. The test script clears `token`."
+          },
+          "response": [
+            {
+              "name": "204 Logged out",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "logout"
+                  ]
+                },
+                "description": "Revokes the bearer token sent with the request (it returns `401` afterwards). Always `204`, even without a token or with an expired one. The test script clears `token`."
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"token\", \"\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Access Types",
+      "item": [
+        {
+          "name": "List access types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/access-types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "access-types"
+              ]
+            },
+            "description": "Accesses that can be requested, ordered by `id`. Any logged-in user."
+          },
+          "response": [
+            {
+              "name": "200 Access types",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/access-types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "access-types"
+                  ]
+                },
+                "description": "Accesses that can be requested, ordered by `id`. Any logged-in user."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"VPN Access\",\n    \"description\": \"Remote connection to the internal company network.\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"GitHub / GitLab Access\",\n    \"description\": \"Access to the company source code repositories.\"\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Figma Access\",\n    \"description\": \"Editor seat in the company design workspace.\"\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Jira Access\",\n    \"description\": \"Create and manage issues in the project tracker.\"\n  }\n]"
+            },
+            {
+              "name": "401 No or invalid token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/access-types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "access-types"
+                  ]
+                },
+                "description": "Accesses that can be requested, ordered by `id`. Any logged-in user."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHENTICATED\",\n    \"message\": \"Your session has expired. Please log in again.\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Requests (USER)",
+      "item": [
+        {
+          "name": "My requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/mine",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "requests",
+                "mine"
+              ]
+            },
+            "description": "The caller's own requests, newest first. **USER only.**"
+          },
+          "response": [
+            {
+              "name": "200 My requests",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/mine",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    "mine"
+                  ]
+                },
+                "description": "The caller's own requests, newest first. **USER only.**"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"accessType\": {\n      \"id\": 1,\n      \"name\": \"VPN Access\",\n      \"description\": \"Remote connection to the internal company network.\"\n    },\n    \"requester\": {\n      \"id\": 4,\n      \"fullName\": \"Alice Anderson\"\n    },\n    \"reason\": \"Need to work from home\",\n    \"status\": \"IN_PROGRESS\",\n    \"currentStep\": \"ADMIN\",\n    \"approvals\": [\n      {\n        \"step\": \"MANAGER\",\n        \"decision\": \"APPROVED\",\n        \"approver\": {\n          \"id\": 2,\n          \"fullName\": \"Maria Manager\"\n        },\n        \"comment\": \"Fine by me\",\n        \"decidedAt\": \"2026-09-28T09:02:11.456Z\"\n      }\n    ],\n    \"createdAt\": \"2026-09-28T08:15:30.123Z\",\n    \"updatedAt\": \"2026-09-28T09:02:11.456Z\"\n  }\n]"
+            },
+            {
+              "name": "403 Wrong role",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/mine",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    "mine"
+                  ]
+                },
+                "description": "The caller's own requests, newest first. **USER only.**"
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"FORBIDDEN\",\n    \"message\": \"You do not have permission to do that.\"\n  }\n}"
+            },
+            {
+              "name": "401 No or invalid token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/mine",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    "mine"
+                  ]
+                },
+                "description": "The caller's own requests, newest first. **USER only.**"
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHENTICATED\",\n    \"message\": \"Your session has expired. Please log in again.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "requests"
+              ]
+            },
+            "description": "Creates a request waiting for the requester's manager. **USER only.** The test script saves the new id into `requestId`.\n\nChecks, in order:\n1. `reason` empty after trimming → `400`\n2. `reason` over 500 characters → `400`\n3. `accessTypeId` not an existing access type → `400`\n4. caller has no manager → `400`\n5. already `APPROVED` for this access → `409 DUPLICATE_REQUEST`\n6. already `IN_PROGRESS` for this access → `409 DUPLICATE_REQUEST`\n\nAn access may be requested again after an earlier request was `REJECTED`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessTypeId\": 1,\n  \"reason\": \"Need to work from home\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests"
+                  ]
+                },
+                "description": "Creates a request waiting for the requester's manager. **USER only.** The test script saves the new id into `requestId`.\n\nChecks, in order:\n1. `reason` empty after trimming → `400`\n2. `reason` over 500 characters → `400`\n3. `accessTypeId` not an existing access type → `400`\n4. caller has no manager → `400`\n5. already `APPROVED` for this access → `409 DUPLICATE_REQUEST`\n6. already `IN_PROGRESS` for this access → `409 DUPLICATE_REQUEST`\n\nAn access may be requested again after an earlier request was `REJECTED`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accessTypeId\": 1,\n  \"reason\": \"Need to work from home\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"accessType\": {\n    \"id\": 1,\n    \"name\": \"VPN Access\",\n    \"description\": \"Remote connection to the internal company network.\"\n  },\n  \"requester\": {\n    \"id\": 4,\n    \"fullName\": \"Alice Anderson\"\n  },\n  \"reason\": \"Need to work from home\",\n  \"status\": \"IN_PROGRESS\",\n  \"currentStep\": \"MANAGER\",\n  \"approvals\": [],\n  \"createdAt\": \"2026-09-28T08:15:30.123Z\",\n  \"updatedAt\": \"2026-09-28T08:15:30.123Z\"\n}"
+            },
+            {
+              "name": "400 Empty reason",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests"
+                  ]
+                },
+                "description": "Creates a request waiting for the requester's manager. **USER only.** The test script saves the new id into `requestId`.\n\nChecks, in order:\n1. `reason` empty after trimming → `400`\n2. `reason` over 500 characters → `400`\n3. `accessTypeId` not an existing access type → `400`\n4. caller has no manager → `400`\n5. already `APPROVED` for this access → `409 DUPLICATE_REQUEST`\n6. already `IN_PROGRESS` for this access → `409 DUPLICATE_REQUEST`\n\nAn access may be requested again after an earlier request was `REJECTED`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accessTypeId\": 1,\n  \"reason\": \"   \"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Please enter a reason for the request.\"\n  }\n}"
+            },
+            {
+              "name": "409 Already pending",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests"
+                  ]
+                },
+                "description": "Creates a request waiting for the requester's manager. **USER only.** The test script saves the new id into `requestId`.\n\nChecks, in order:\n1. `reason` empty after trimming → `400`\n2. `reason` over 500 characters → `400`\n3. `accessTypeId` not an existing access type → `400`\n4. caller has no manager → `400`\n5. already `APPROVED` for this access → `409 DUPLICATE_REQUEST`\n6. already `IN_PROGRESS` for this access → `409 DUPLICATE_REQUEST`\n\nAn access may be requested again after an earlier request was `REJECTED`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accessTypeId\": 1,\n  \"reason\": \"Need to work from home\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"DUPLICATE_REQUEST\",\n    \"message\": \"You already have a pending request for VPN Access.\"\n  }\n}"
+            },
+            {
+              "name": "403 Wrong role",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests"
+                  ]
+                },
+                "description": "Creates a request waiting for the requester's manager. **USER only.** The test script saves the new id into `requestId`.\n\nChecks, in order:\n1. `reason` empty after trimming → `400`\n2. `reason` over 500 characters → `400`\n3. `accessTypeId` not an existing access type → `400`\n4. caller has no manager → `400`\n5. already `APPROVED` for this access → `409 DUPLICATE_REQUEST`\n6. already `IN_PROGRESS` for this access → `409 DUPLICATE_REQUEST`\n\nAn access may be requested again after an earlier request was `REJECTED`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accessTypeId\": 1,\n  \"reason\": \"Need to work from home\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"FORBIDDEN\",\n    \"message\": \"You do not have permission to do that.\"\n  }\n}"
+            },
+            {
+              "name": "401 No or invalid token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests"
+                  ]
+                },
+                "description": "Creates a request waiting for the requester's manager. **USER only.** The test script saves the new id into `requestId`.\n\nChecks, in order:\n1. `reason` empty after trimming → `400`\n2. `reason` over 500 characters → `400`\n3. `accessTypeId` not an existing access type → `400`\n4. caller has no manager → `400`\n5. already `APPROVED` for this access → `409 DUPLICATE_REQUEST`\n6. already `IN_PROGRESS` for this access → `409 DUPLICATE_REQUEST`\n\nAn access may be requested again after an earlier request was `REJECTED`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accessTypeId\": 1,\n  \"reason\": \"Need to work from home\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHENTICATED\",\n    \"message\": \"Your session has expired. Please log in again.\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set(\"requestId\", pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Approvals (MANAGER, ADMIN)",
+      "item": [
+        {
+          "name": "Review items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/approvals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "approvals"
+              ]
+            },
+            "description": "Every request **visible** to the caller, in any status, newest first. **MANAGER or ADMIN.**\n\n- MANAGER sees their team's requests (requester's `managerId` = caller).\n- ADMIN sees only requests a manager has approved.\n- `canAct` is `true` when the request is waiting at the caller's step."
+          },
+          "response": [
+            {
+              "name": "200 Review items",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/approvals",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "approvals"
+                  ]
+                },
+                "description": "Every request **visible** to the caller, in any status, newest first. **MANAGER or ADMIN.**\n\n- MANAGER sees their team's requests (requester's `managerId` = caller).\n- ADMIN sees only requests a manager has approved.\n- `canAct` is `true` when the request is waiting at the caller's step."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"accessType\": {\n      \"id\": 1,\n      \"name\": \"VPN Access\",\n      \"description\": \"Remote connection to the internal company network.\"\n    },\n    \"requester\": {\n      \"id\": 4,\n      \"fullName\": \"Alice Anderson\"\n    },\n    \"reason\": \"Need to work from home\",\n    \"status\": \"IN_PROGRESS\",\n    \"currentStep\": \"MANAGER\",\n    \"approvals\": [],\n    \"createdAt\": \"2026-09-28T08:15:30.123Z\",\n    \"updatedAt\": \"2026-09-28T08:15:30.123Z\",\n    \"canAct\": true\n  }\n]"
+            },
+            {
+              "name": "403 Wrong role",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/approvals",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "approvals"
+                  ]
+                },
+                "description": "Every request **visible** to the caller, in any status, newest first. **MANAGER or ADMIN.**\n\n- MANAGER sees their team's requests (requester's `managerId` = caller).\n- ADMIN sees only requests a manager has approved.\n- `canAct` is `true` when the request is waiting at the caller's step."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"FORBIDDEN\",\n    \"message\": \"You do not have permission to do that.\"\n  }\n}"
+            },
+            {
+              "name": "401 No or invalid token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/approvals",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "approvals"
+                  ]
+                },
+                "description": "Every request **visible** to the caller, in any status, newest first. **MANAGER or ADMIN.**\n\n- MANAGER sees their team's requests (requester's `managerId` = caller).\n- ADMIN sees only requests a manager has approved.\n- `canAct` is `true` when the request is waiting at the caller's step."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHENTICATED\",\n    \"message\": \"Your session has expired. Please log in again.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Approve request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/:id/decision",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "requests",
+                ":id",
+                "decision"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{requestId}}",
+                  "description": "Request id"
+                }
+              ]
+            },
+            "description": "Approves the request at the caller's step. **MANAGER or ADMIN.** `comment` is optional when approving.\n\nTransitions: MANAGER + APPROVED → `IN_PROGRESS` / `ADMIN`; ADMIN + APPROVED → `APPROVED`.\n\nChecks, in order: invalid input `400` → not found or not visible `404` → already final `409 ALREADY_FINALIZED` → other step `409 NOT_YOUR_STEP`.\nIf two reviewers decide at once, exactly one wins; the other gets `409`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"APPROVED\",\n  \"comment\": \"Fine by me\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 Manager approved",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/:id/decision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    ":id",
+                    "decision"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{requestId}}",
+                      "description": "Request id"
+                    }
+                  ]
+                },
+                "description": "Approves the request at the caller's step. **MANAGER or ADMIN.** `comment` is optional when approving.\n\nTransitions: MANAGER + APPROVED → `IN_PROGRESS` / `ADMIN`; ADMIN + APPROVED → `APPROVED`.\n\nChecks, in order: invalid input `400` → not found or not visible `404` → already final `409 ALREADY_FINALIZED` → other step `409 NOT_YOUR_STEP`.\nIf two reviewers decide at once, exactly one wins; the other gets `409`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"APPROVED\",\n  \"comment\": \"Fine by me\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"accessType\": {\n    \"id\": 1,\n    \"name\": \"VPN Access\",\n    \"description\": \"Remote connection to the internal company network.\"\n  },\n  \"requester\": {\n    \"id\": 4,\n    \"fullName\": \"Alice Anderson\"\n  },\n  \"reason\": \"Need to work from home\",\n  \"status\": \"IN_PROGRESS\",\n  \"currentStep\": \"ADMIN\",\n  \"approvals\": [\n    {\n      \"step\": \"MANAGER\",\n      \"decision\": \"APPROVED\",\n      \"approver\": {\n        \"id\": 2,\n        \"fullName\": \"Maria Manager\"\n      },\n      \"comment\": \"Fine by me\",\n      \"decidedAt\": \"2026-09-28T09:02:11.456Z\"\n    }\n  ],\n  \"createdAt\": \"2026-09-28T08:15:30.123Z\",\n  \"updatedAt\": \"2026-09-28T09:02:11.456Z\"\n}"
+            },
+            {
+              "name": "404 Not visible",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/:id/decision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    ":id",
+                    "decision"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{requestId}}",
+                      "description": "Request id"
+                    }
+                  ]
+                },
+                "description": "Approves the request at the caller's step. **MANAGER or ADMIN.** `comment` is optional when approving.\n\nTransitions: MANAGER + APPROVED → `IN_PROGRESS` / `ADMIN`; ADMIN + APPROVED → `APPROVED`.\n\nChecks, in order: invalid input `400` → not found or not visible `404` → already final `409 ALREADY_FINALIZED` → other step `409 NOT_YOUR_STEP`.\nIf two reviewers decide at once, exactly one wins; the other gets `409`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"APPROVED\",\n  \"comment\": \"Fine by me\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Request not found.\"\n  }\n}"
+            },
+            {
+              "name": "409 Not your step",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/:id/decision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    ":id",
+                    "decision"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{requestId}}",
+                      "description": "Request id"
+                    }
+                  ]
+                },
+                "description": "Approves the request at the caller's step. **MANAGER or ADMIN.** `comment` is optional when approving.\n\nTransitions: MANAGER + APPROVED → `IN_PROGRESS` / `ADMIN`; ADMIN + APPROVED → `APPROVED`.\n\nChecks, in order: invalid input `400` → not found or not visible `404` → already final `409 ALREADY_FINALIZED` → other step `409 NOT_YOUR_STEP`.\nIf two reviewers decide at once, exactly one wins; the other gets `409`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"APPROVED\",\n  \"comment\": \"Fine by me\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"NOT_YOUR_STEP\",\n    \"message\": \"This request is waiting for admin approval.\"\n  }\n}"
+            },
+            {
+              "name": "409 Already finalized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/:id/decision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    ":id",
+                    "decision"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{requestId}}",
+                      "description": "Request id"
+                    }
+                  ]
+                },
+                "description": "Approves the request at the caller's step. **MANAGER or ADMIN.** `comment` is optional when approving.\n\nTransitions: MANAGER + APPROVED → `IN_PROGRESS` / `ADMIN`; ADMIN + APPROVED → `APPROVED`.\n\nChecks, in order: invalid input `400` → not found or not visible `404` → already final `409 ALREADY_FINALIZED` → other step `409 NOT_YOUR_STEP`.\nIf two reviewers decide at once, exactly one wins; the other gets `409`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"APPROVED\",\n  \"comment\": \"Fine by me\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"ALREADY_FINALIZED\",\n    \"message\": \"This request has already been finalized.\"\n  }\n}"
+            },
+            {
+              "name": "403 Wrong role",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/:id/decision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    ":id",
+                    "decision"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{requestId}}",
+                      "description": "Request id"
+                    }
+                  ]
+                },
+                "description": "Approves the request at the caller's step. **MANAGER or ADMIN.** `comment` is optional when approving.\n\nTransitions: MANAGER + APPROVED → `IN_PROGRESS` / `ADMIN`; ADMIN + APPROVED → `APPROVED`.\n\nChecks, in order: invalid input `400` → not found or not visible `404` → already final `409 ALREADY_FINALIZED` → other step `409 NOT_YOUR_STEP`.\nIf two reviewers decide at once, exactly one wins; the other gets `409`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"APPROVED\",\n  \"comment\": \"Fine by me\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"FORBIDDEN\",\n    \"message\": \"You do not have permission to do that.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reject request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/:id/decision",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "requests",
+                ":id",
+                "decision"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{requestId}}",
+                  "description": "Request id"
+                }
+              ]
+            },
+            "description": "Rejects the request; this is final at either step. **MANAGER or ADMIN.** `comment` is **required** (non-empty after trimming, max 500).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"REJECTED\",\n  \"comment\": \"Use the shared VPN profile instead.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 Rejected",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/:id/decision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    ":id",
+                    "decision"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{requestId}}",
+                      "description": "Request id"
+                    }
+                  ]
+                },
+                "description": "Rejects the request; this is final at either step. **MANAGER or ADMIN.** `comment` is **required** (non-empty after trimming, max 500).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"REJECTED\",\n  \"comment\": \"Use the shared VPN profile instead.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"accessType\": {\n    \"id\": 1,\n    \"name\": \"VPN Access\",\n    \"description\": \"Remote connection to the internal company network.\"\n  },\n  \"requester\": {\n    \"id\": 4,\n    \"fullName\": \"Alice Anderson\"\n  },\n  \"reason\": \"Need to work from home\",\n  \"status\": \"REJECTED\",\n  \"currentStep\": null,\n  \"approvals\": [\n    {\n      \"step\": \"MANAGER\",\n      \"decision\": \"REJECTED\",\n      \"approver\": {\n        \"id\": 2,\n        \"fullName\": \"Maria Manager\"\n      },\n      \"comment\": \"Use the shared VPN profile instead.\",\n      \"decidedAt\": \"2026-09-28T09:02:11.456Z\"\n    }\n  ],\n  \"createdAt\": \"2026-09-28T08:15:30.123Z\",\n  \"updatedAt\": \"2026-09-28T09:02:11.456Z\"\n}"
+            },
+            {
+              "name": "400 Missing comment",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/:id/decision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    ":id",
+                    "decision"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{requestId}}",
+                      "description": "Request id"
+                    }
+                  ]
+                },
+                "description": "Rejects the request; this is final at either step. **MANAGER or ADMIN.** `comment` is **required** (non-empty after trimming, max 500).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"REJECTED\",\n  \"comment\": \"\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Please give a reason for the rejection.\"\n  }\n}"
+            },
+            {
+              "name": "400 Invalid decision",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/requests/:id/decision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "requests",
+                    ":id",
+                    "decision"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{requestId}}",
+                      "description": "Request id"
+                    }
+                  ]
+                },
+                "description": "Rejects the request; this is final at either step. **MANAGER or ADMIN.** `comment` is **required** (non-empty after trimming, max 500).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"MAYBE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Decision must be APPROVED or REJECTED.\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Dashboard summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "summary"
+              ]
+            },
+            "description": "Request counts by status and step for the Dashboard page (polled every 10 s). Any logged-in user.\n\nThe scope comes only from the caller's role (no query parameters):\n- ADMIN → `SYSTEM`: every request (counts only, so being wider than `/api/approvals` is fine)\n- MANAGER → `TEAM`: requests from the manager's team\n- USER → `MINE`: the caller's own requests\n\nAlways `total = inProgress + approved + rejected` and `inProgress = waitingManager + waitingAdmin`. Counts are `0`, never `null`."
+          },
+          "response": [
+            {
+              "name": "200 Admin (SYSTEM)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dashboard/summary",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "dashboard",
+                    "summary"
+                  ]
+                },
+                "description": "Request counts by status and step for the Dashboard page (polled every 10 s). Any logged-in user.\n\nThe scope comes only from the caller's role (no query parameters):\n- ADMIN → `SYSTEM`: every request (counts only, so being wider than `/api/approvals` is fine)\n- MANAGER → `TEAM`: requests from the manager's team\n- USER → `MINE`: the caller's own requests\n\nAlways `total = inProgress + approved + rejected` and `inProgress = waitingManager + waitingAdmin`. Counts are `0`, never `null`."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"scope\": \"SYSTEM\",\n  \"total\": 4,\n  \"inProgress\": 2,\n  \"waitingManager\": 1,\n  \"waitingAdmin\": 1,\n  \"approved\": 1,\n  \"rejected\": 1,\n  \"generatedAt\": \"2026-09-28T09:15:30.123Z\"\n}"
+            },
+            {
+              "name": "200 User without requests (MINE)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dashboard/summary",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "dashboard",
+                    "summary"
+                  ]
+                },
+                "description": "Request counts by status and step for the Dashboard page (polled every 10 s). Any logged-in user.\n\nThe scope comes only from the caller's role (no query parameters):\n- ADMIN → `SYSTEM`: every request (counts only, so being wider than `/api/approvals` is fine)\n- MANAGER → `TEAM`: requests from the manager's team\n- USER → `MINE`: the caller's own requests\n\nAlways `total = inProgress + approved + rejected` and `inProgress = waitingManager + waitingAdmin`. Counts are `0`, never `null`."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"scope\": \"MINE\",\n  \"total\": 0,\n  \"inProgress\": 0,\n  \"waitingManager\": 0,\n  \"waitingAdmin\": 0,\n  \"approved\": 0,\n  \"rejected\": 0,\n  \"generatedAt\": \"2026-09-28T09:15:30.123Z\"\n}"
+            },
+            {
+              "name": "401 No or invalid token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dashboard/summary",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "dashboard",
+                    "summary"
+                  ]
+                },
+                "description": "Request counts by status and step for the Dashboard page (polled every 10 s). Any logged-in user.\n\nThe scope comes only from the caller's role (no query parameters):\n- ADMIN → `SYSTEM`: every request (counts only, so being wider than `/api/approvals` is fine)\n- MANAGER → `TEAM`: requests from the manager's team\n- USER → `MINE`: the caller's own requests\n\nAlways `total = inProgress + approved + rejected` and `inProgress = waitingManager + waitingAdmin`. Counts are `0`, never `null`."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHENTICATED\",\n    \"message\": \"Your session has expired. Please log in again.\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

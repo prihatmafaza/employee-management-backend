@@ -39,7 +39,7 @@ To start from an empty database: `docker compose down -v`.
 
 | Env var                 | Default                                            |
 | ----------------------- | -------------------------------------------------- |
-| `DB_URL`                | `jdbc:postgresql://localhost:5432/access_requests` |
+| `DB_URL`                | `jdbc:postgresql://localhost:5433/access_requests` |
 | `DB_USER`               | `access_requests`                                  |
 | `DB_PASSWORD`           | `access_requests`                                  |
 | `SERVER_PORT`           | `8080`                                             |

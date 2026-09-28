@@ -128,7 +128,49 @@ curl -s -X POST http://localhost:8080/api/auth/login \
 
 To start again from an empty database: `docker compose down -v`.
 
+<<<<<<< HEAD
 ### Demo accounts
+=======
+### Configuration
+
+| Env var                 | Default                                            |
+| ----------------------- | -------------------------------------------------- |
+| `DB_URL`                | `jdbc:postgresql://localhost:5433/access_requests` |
+| `DB_USER`               | `access_requests`                                  |
+| `DB_PASSWORD`           | `access_requests`                                  |
+| `SERVER_PORT`           | `8080`                                             |
+| `JWT_SECRET`            | dev-only value (required by the `prod` profile, ≥ 32 bytes) |
+| `JWT_EXPIRATION`        | `2h`                                               |
+
+In production, run behind HTTPS with `SPRING_PROFILES_ACTIVE=prod` and a strong
+`JWT_SECRET`, and serve the frontend from the same origin as `/api`.
+
+## API documentation
+
+- `docs/api-contract.md`: the full contract (types, rules, error codes).
+- `docs/access-requests.postman_collection.json`: every endpoint with example
+  responses. Import it into Postman, run **Auth → Login as …** (the token is
+  saved automatically), then call any endpoint. Change `baseUrl` if the backend
+  isn't on `http://localhost:8080`.
+
+## Tests
+
+```bash
+./mvnw verify
+```
+
+Docker must be running: the integration tests start a `postgres:16-alpine`
+container through Testcontainers. The suite contains:
+
+- `AcceptanceScenariosTest`: the 15 acceptance scenarios from the contract, over real HTTP with a bearer token;
+- `SecurityAndErrorHandlingTest`: token issue/validation, logout revocation, rate limiting, 415/413/404/405, error format, list ordering and visibility;
+- `DashboardSummaryTest`: dashboard counts with no requests, and a user whose team has requests but who has none;
+- `DecisionConcurrencyTest`: two reviewers deciding the same step in parallel, where exactly one wins and the other gets 409;
+- `RequestServiceTest`: the contract's validation order and messages, transitions and visibility, against the database;
+- `RequestRulesTest`: pure unit tests of the state machine, visibility and `canAct`.
+
+## Demo accounts
+>>>>>>> 43da938c791c7e82308fb4929242ee557084c067
 
 Every password is `password123`.
 
